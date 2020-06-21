@@ -21,6 +21,7 @@ var workMinutesInput = document.querySelector("#work-minutes"); //WORK SCROLL
 var restMinutesInput = document.querySelector("#rest-minutes"); //REST SCROLL
 var buttons = document.querySelector("#buttons");
 
+var statusArr = [];
 var totalSeconds = 0;
 var secondsElapsed = 0;
 var interval;
@@ -32,7 +33,9 @@ let status = true;
 
 var timerId;
 
-resetTimer();
+
+//the first thing you do, after declaring variables, is reset timer. So... I need to get that information from local storage
+retrieveStorage();
 playButton.addEventListener("click", startTimer);
 pauseButton.addEventListener("click", pauseTimer);
 stopButton.addEventListener("click", stopTimer);
@@ -56,14 +59,15 @@ function changeStatus() {
   if (status) {
     status = false;
     statusSpan.textContent = "Resting";
+    statusArr[0] = false;
+
   } else {
     status = true;
     statusSpan.textContent = "Working";
   }
   stopTimer();
+  updateStorage();
 }
-
-
 function startTimer() {
   if (secondsElapsed === 0) {
     if (status) {
@@ -77,12 +81,10 @@ function startTimer() {
   timerId = setInterval(renderClock, 1000);
   //return timerId;
 }
-
 function pauseTimer() {
   clearInterval(timerId);
   console.log("paused");
 }
-
 function stopTimer() {
   clearInterval(timerId);
   resetTimer();
@@ -101,6 +103,7 @@ function resetTimer() {
     secondsElapsed = 0;
     timerRest = rest;
   }
+  updateStorage();
 
 }
 
@@ -115,8 +118,39 @@ function renderClock() {
     secondsDisplay.textContent = pad(totalSeconds % 60);
     minutesDisplay.textContent = pad(parseInt(totalSeconds / 60));
   }
+  updateStorage();
 }
 
 function pad(number) {
   return (number < 10 ? '0' : '') + number;
+}
+
+// statusArr = [status, timerWork, timerRest, secondsElapsed];
+function retrieveStorage() {
+  //I need to know if I'm resting, seconds elapsed, and timerwork
+  statusArr = JSON.parse(localStorage.getItem('statusArr'));
+  if(statusArr[0]) {
+    statusToggle.setAttribute("checked", true);
+    status = statusArr[0];
+    statusSpan.textContent = "Working";
+    secondsElapsed = statusArr[3]; 
+    timerWork = statusArr[1];
+    totalSeconds = (timerWork * 60) - secondsElapsed;
+    secondsDisplay.textContent = pad(totalSeconds % 60);  //use mod to find seconds. 
+    minutesDisplay.textContent = pad(parseInt(totalSeconds / 60));
+  } else {
+    
+    status = statusArr[0];
+    statusSpan.textContent = "Resting";
+    secondsElapsed = statusArr[3];
+    timerRest = statusArr[2];
+    totalSeconds = (timerRest * 60) - secondsElapsed;
+    secondsDisplay.textContent = pad(totalSeconds % 60);
+    minutesDisplay.textContent = pad(parseInt(totalSeconds / 60));
+  }
+}
+
+function updateStorage() {
+  statusArr = [status, timerWork, timerRest, secondsElapsed];
+  localStorage.setItem('statusArr', JSON.stringify(statusArr));
 }
