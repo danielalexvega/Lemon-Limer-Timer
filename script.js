@@ -35,7 +35,9 @@ var timerId;
 
 
 //the first thing you do, after declaring variables, is reset timer. So... I need to get that information from local storage
-retrieveStorage();
+if(localStorage.getItem('statusArr' !== null)){
+  retrieveStorage();
+}
 playButton.addEventListener("click", startTimer);
 pauseButton.addEventListener("click", pauseTimer);
 stopButton.addEventListener("click", stopTimer);
